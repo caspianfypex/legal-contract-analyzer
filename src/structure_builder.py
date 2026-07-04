@@ -82,22 +82,22 @@ def build_structure(elements: List[Element]):
             current_clause += " " + text
             current_section["clauses"][-1] = current_clause
         elif current_section:
-            # if category == 'Table':
-            #     message = HumanMessage(
-            #         content=[
-            #             {"type": "text", "text": vision_prompt},
-            #             {
-            #                 "type": "image_url",
-            #                 "image_url": f"data:image/jpeg;base64,{el.metadata.image_base64}",
-            #             },
-            #         ]
-            #     )
-            #     response = llm.invoke([message])
-            #     print(response.embedding_text)
-            #     current_section["body"].append(response.embedding_text)
-            #     current_section['tables'].append(response.structured_json)
-            # else:
-             current_section['body'].append(text)
+            if category == 'Table':
+                message = HumanMessage(
+                    content=[
+                        {"type": "text", "text": vision_prompt},
+                        {
+                            "type": "image_url",
+                            "image_url": f"data:image/jpeg;base64,{el.metadata.image_base64}",
+                        },
+                    ]
+                )
+                response = llm.invoke([message])
+                print(response.embedding_text)
+                current_section["body"].append(response.embedding_text)
+                current_section['tables'].append(response.structured_json)
+            else:
+                current_section['body'].append(text)
         else:
             if category != 'Table':
                 structure.append({
@@ -106,23 +106,23 @@ def build_structure(elements: List[Element]):
                     "clauses": [],
                     "page": getattr(getattr(el, 'metadata'), 'page_number', -1)
                 })
-            # else:
-            #     message = HumanMessage(
-            #         content=[
-            #             {"type": "text", "text": vision_prompt},
-            #             {
-            #                 "type": "image_url",
-            #                 "image_url": f"data:image/jpeg;base64,{el.metadata.image_base64}",
-            #             },
-            #         ]
-            #     )
-            #     response = llm.invoke([message])
-            #     structure.append({
-            #         "title": "UNKNOWN",
-            #         "body": [response.embedding_text],
-            #         "clauses": [],
-            #         "page": getattr(getattr(el, 'metadata'), 'page_number', -1),
-            #         "tables": [response.structured_json]
-            #     })
+            else:
+                message = HumanMessage(
+                    content=[
+                        {"type": "text", "text": vision_prompt},
+                        {
+                            "type": "image_url",
+                            "image_url": f"data:image/jpeg;base64,{el.metadata.image_base64}",
+                        },
+                    ]
+                )
+                response = llm.invoke([message])
+                structure.append({
+                    "title": "UNKNOWN",
+                    "body": [response.embedding_text],
+                    "clauses": [],
+                    "page": getattr(getattr(el, 'metadata'), 'page_number', -1),
+                    "tables": [response.structured_json]
+                })
 
     return structure

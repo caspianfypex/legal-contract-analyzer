@@ -2,7 +2,6 @@ from typing import List
 
 from langchain_core.documents import Document
 from unstructured.partition.pdf import partition_pdf
-from langchain_groq import ChatGroq
 from langchain_community.vectorstores import FAISS
 from pathlib import Path
 from dotenv import load_dotenv
