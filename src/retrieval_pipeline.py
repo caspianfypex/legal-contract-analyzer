@@ -1,6 +1,6 @@
 from collections import defaultdict
 from pathlib import Path
-from typing import List
+from typing import List, Literal
 
 from pydantic import BaseModel
 from langchain_community.retrievers import BM25Retriever
@@ -10,6 +10,18 @@ from models import get_embedding_model,get_reranker_model,get_llm_model
 from prompts import reranker_prompt,semantic_prompt,bm25_prompt,llm_risk_prompt
 
 load_dotenv()
+
+class RiskStructure(BaseModel):
+    risk_title: str
+    severity: Literal['Low','Medium','High','Critical']
+    section: str
+    clause: str
+    page: str
+    why_it_is_risky: str
+    possible_consequences: str
+
+class RiskResponseStructure(BaseModel):
+    risks: List[RiskStructure]
 
 class QueriesStructure(BaseModel):
     queries: List[str]
@@ -21,6 +33,7 @@ embedding_model = get_embedding_model()
 llm = get_llm_model()
 hf_cross_encoder = get_reranker_model()
 llm_with_tools = llm.with_structured_output(QueriesStructure)
+llm_structured_risk_analyzer = llm.with_structured_output(RiskResponseStructure)
 
 def reciprocal_rank_fusion(chunk_lists, k=60, verbose=True):
     if verbose:
@@ -310,9 +323,12 @@ def process_query(db, docs, n_retrieve_chunks=20, n_rrf_chunks=80, n_chunks=15, 
                 llm_prompt += f'NEXT CHUNK:\n {docs[c.metadata.get("next_chunk_id")].page_content}\n'
 
     try:
-        response = llm.invoke(llm_prompt)
+        response = llm_structured_risk_analyzer.invoke(llm_prompt)
     except Exception as e:
         raise RuntimeError(f'Error occurred during risk report generation\nError: {e}')
-    return response.content
+
+    for risk in response.risks:
+        print(risk.severity, risk.risk_title, risk.section, risk.clause)
+    return response
 
 
