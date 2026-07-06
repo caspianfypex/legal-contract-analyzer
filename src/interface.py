@@ -18,11 +18,6 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ──────────────────────────────────────────────────────────────────────────
-# GLOBAL STYLE — "Government / Chancery" luxury theme
-# Deep navy + parchment ink + brushed-gold accents, serif typography,
-# engraved borders, seal-like badges.
-# ──────────────────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
 
@@ -371,10 +366,10 @@ with st.sidebar:
     search_mode = st.selectbox(
         "Risk Analysis Depth",
         [
-            "Low — Efficient Legal Analysis",
-            "Medium — Standard Legal Review",
-            "High — Deep Legal Reasoning",
-            "Ultra — Court-Grade Audit"
+            "Low",
+            "Medium",
+            "High",
+            "Ultra"
         ]
     )
 
@@ -472,31 +467,16 @@ if analyze:
         "Low": ("🟢", "badge-low"),
     }
 
-    for i, r in enumerate(result.risks, start=1):
+    for i, r in enumerate(result.risks, start=0):
         emoji, badge_class = badge_map.get(r.severity, ("⚪", "badge-medium"))
 
         with st.expander(f"{emoji}  Finding {i:02d} — {r.severity} — {r.risk_title}"):
             card_html = f"""<div class="risk-card">
-<span class="badge {badge_class}">{r.severity} Risk</span>
-<span class="field-label">Why It Is Risky</span>
-{r.why_it_is_risky}
-<span class="field-label">Possible Consequences</span>
-{r.possible_consequences}
-<div class="source-line">Source: {r.section}{f', Clause {r.clause}' if r.clause else ''} — Page {r.page}</div>
-</div>"""
+            <span class="badge {badge_class}">{r.severity} Risk</span>
+            <span class="field-label">Why It Is Risky</span>
+            {r.why_it_is_risky}
+            <span class="field-label">Possible Consequences</span>
+            {r.possible_consequences}
+            <div class="source-line">Source: {r.section}{f', Clause {r.clause}' if r.clause else ''} — Page {r.page}</div>
+            </div>"""
             st.markdown(card_html, unsafe_allow_html=True)
-
-    st.markdown('<div class="ornate-divider"><span>Report</span></div>', unsafe_allow_html=True)
-
-    st.download_button(
-        "⬇️ Export Legal Risk Report",
-        data=str(result),
-        file_name="legal_risk_report.txt",
-        mime="text/plain",
-        use_container_width=True
-    )
-
-    st.markdown(
-        f'<div class="footer-note">Generated {today} &nbsp;·&nbsp; Legal Risk Intelligence System &nbsp;·&nbsp; Not Legal Advice</div>',
-        unsafe_allow_html=True
-    )

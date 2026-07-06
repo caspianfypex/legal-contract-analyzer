@@ -11,7 +11,7 @@ import retrieval_pipeline
 app = FastAPI()
 modes_dict = {'Low': 5, 'Standard': 15, 'High': 25, 'Ultra': 40}
 
-def run_pipeline(docspath, context_query='', mode=Literal['Low', 'Standard', 'High', 'Ultra']):
+def run_pipeline(docspath, context_query='', mode:Literal['Low', 'Standard', 'High', 'Ultra']='Low'):
     try:
         chunks = ingestion_pipeline.chunk_contract(docspath)
         db = ingestion_pipeline.create_vector_store(chunks)
@@ -19,11 +19,10 @@ def run_pipeline(docspath, context_query='', mode=Literal['Low', 'Standard', 'Hi
         os.remove(docspath)
         return db,response
     except Exception as e:
-        print(f'Error occured: {e}')
-        return None,None
+        raise RuntimeError(f'Error occured during running pipeline: {e}')
 
 @app.post('/upload_pdf')
-async def upload_pdf(context_query = '', file: UploadFile = File(), mode=Literal['Low', 'Standard', 'High', 'Ultra']):
+async def upload_pdf(mode:Literal['Low', 'Standard', 'High', 'Ultra']='Low', context_query = '', file: UploadFile = File()):
     with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp:
          content = await file.read()
          tmp.write(content)
